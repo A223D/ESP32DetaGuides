@@ -3,7 +3,7 @@ This is part 1 of a 2 part tutorial on using Deta Base with an ESP32 running the
 
 This tutorial focuses on using an ESP32/ESP8266 to interface with a Deta Base instance. Deta Base is online NoSQL database, which is free to use and unlimited. These qualities make it perfect for experimental projects and hackathons. 
 
-By the end of this tutorial, you will be able to able to perform CRUD(Create, Read, Update, Delete) and query operations in a Deta Base instance using an ESP32. 
+By the end of this tutorial, you will be able to perform CRUD(Create, Read, Update, Delete) and query operations in a Deta Base instance using an ESP32. 
 
 If you already have a Deta Base instance set up with a Project name, Project Key(aka API key), and Base name in hand, skip the Deta Base setup section and proceed to the Arduino section. 
 
@@ -155,7 +155,7 @@ We can either use `putObject` to create an object with the key `cba` or we can u
 
 Now, if we execute 
 ```c++
-printResult(detaObj.getObject("abc"));
+printResult(detaObj.getObject("cba"));
 ```
 , we will get a status code in the 200s, and the entire object with this key will be printed out.
 
@@ -164,7 +164,7 @@ Here is an example:
 ```c++
 printResult(detaObj.deleteObject("cba"));
 ```
-The output indicates successful deletion, even though we know that no object with the key `cba` exists.  If there was an object with this key, it will have been deleted. This is by design, and there is no way to know if an object with the specified key existed or not.
+The output indicates successful deletion, even though we know that no object with the key `cba` exists.  If there was an object with this key, it would have been deleted. This is by design, and there is no way to know if an object with the specified key existed or not.
 
 The `insertObject` function corresponds to [this type of request in the docs](https://docs.deta.sh/docs/base/http/#insert-item). The expected input is in the following format:
 ```json
@@ -175,7 +175,131 @@ The `insertObject` function corresponds to [this type of request in the docs](ht
 	}
 }
 ```
-and the object is only inserted if no other object with the same key exists. If a key is not provided in the payload, it works just like the `putObject` function. An example of its usage:
+and the object is only inserted if no other object with the same key exists. If a key is not provided in the payload, it works just like the `putObject` function. Executing the following
 ```c++
 printResult(detaObj.insertObject("{\"item\":{\"key\":\"cba\",\"age\":4}}"));
 ```
+will add the object
+```json
+{
+	"key": "cba",
+	"age": 4
+}
+```
+as long as no other entry with the key `cba` exists. Since we just created an object with the key `cba`, we will get a 400 level status code and some error in the payload. 
+Executing
+```c++
+printResult(detaObj.insertObject("{\"item\":{\"key\":\"abc\",\"age\":4}}"));
+```
+will give us a 200 level status code (successful request) since no other entry with key `abc` existed before this one. You can see with the online GUI that this entry has been added. 
+
+![abc Added](./to-be-added) 
+
+`updateObject` is used to update existing entries. It expects a key for an existing object and an input in the following JSON format:
+```json
+{
+
+	"set"  :  {
+		//set some attribute to some value like
+		//age: 10
+	},
+
+	"increment"  :{
+		//increment some attribute by some value like
+		//age: 1
+	},
+	
+	"append":  {
+		//append some value to some list attribute like
+		//names: ["John"]
+	},
+	
+	"prepend": {
+		//append some value to some list attribute like
+		//names: ["Sam"]
+	},
+	
+	"delete":  [//attributes to be deleted]
+}
+```
+All of the JSON sub-objects (set, increment, append, prepend, and delete) are optional. A more complete example containing a before and after scenario for this function/request can be [found in the docs here](https://docs.deta.sh/docs/base/http/#example-2).
+
+Executing
+```c++
+ printResult(detaObj.updateObject("{\"increment\":{\"age\":1}}", "abc"));
+```
+will increase the value of the `age` attribute by 1 in the entry of key `abc`. The status code and the reply will be printed accordingly.
+
+It is also possible to execute queries on the entire database and retrieve entries that match the query. The queries are also in JSON with a specific format. The formatting of a JSON query for Deta Base is explained [here](https://docs.deta.sh/docs/base/queries/).
+Executing
+```c++
+printResult(detaObj.query("{\"query\":[{\"age?lt\": 10}]}"));
+```
+will provide us with all the objects in the database which have the value of their `age` attribute less than 10. This should return all the objects in our database. 
+
+## Conclusion
+The final code for this tutorial is:
+```c++
+#include <detaBaseArduinoESP32.h>
+#include <WiFiClientSecure.h>
+
+char* apiKey = "MY_KEY";
+char* detaID = "MY_ID";
+char* detaBaseName = "MY_BASE";
+
+WiFiClientSecure client;
+//choose this:
+DetaBaseObject detaObj(client, detaID, detaBaseName, apiKey, true);
+//or this:
+//DetaBaseObject detaObj(client, detaID, detaBaseName, apiKey);
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println("Initializing WiFi");
+  WiFi.begin("MY_SSID", "MY_PASSWORD");
+  Serial.println("Waiting to connect to WiFi");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("WiFi connected!");
+}
+
+void loop(){
+	printResult(detaObj.putObject("{\"items\":[{\"age\":4}]}"));
+	Serial.println(); //for ease of reading
+
+	printResult(detaObj.getObject("abc"));
+	Serial.println(); //for ease of reading
+
+	printResult(detaObj.deleteObject("cba"));
+	Serial.println(); //for ease of reading
+
+	printResult(detaObj.insertObject("{\"item\":{\"key\":\"cba\",\"age\":4}}"));
+	Serial.println(); //for ease of reading
+
+	printResult(detaObj.insertObject("{\"item\":{\"key\":\"abc\",\"age\":4}}"));
+	Serial.println(); //for ease of reading
+
+	printResult(detaObj.updateObject("{\"increment\":{\"age\":1}}", "abc"));
+	Serial.println(); //for ease of reading
+
+	printResult(detaObj.query("{\"query\":[{\"age?lt\": 10}]}"));
+	Serial.println(); //for ease of reading
+}
+```
+and it will do the respective operations on the database. Remember that the `printResult` function is not optional and each functional can be written as 
+```c++
+detaObj.putObject("{\"items\":[{\"age\":4}]}");
+detaObj.getObject("abc");
+//etc.
+```
+if the output is not required.
+
+This tutorial dealt with sending fixed data to a Deta Base instance. To learn how to send dynamic data (such as a continuous read value from a sensor), [move on part 2](to/be/done). 
+
+## Frequently Asked Questions
+* Check payload error
+	This error occurs when the JSON input being provided is invalid or is not in the correct format. Check whether each bracket is closed, and that each internal `"` has its own `\`.
+* Nested JSON objects
+Nested JSON objects can be added with a `.` operator. [Check the docs](https://docs.deta.sh/docs/base/http) to see how it's done.
