@@ -1,8 +1,3 @@
-# ESP32/ESP8266: Working with Deta Base
-
-This tutorial focuses on using an ESP32/ESP8266 to interface with a Deta Base instance. Deta Base is online NoSQL database, which is free to use and unlimited. These qualities make it perfect for experimental projects and hackathons. 
-
-By the end of this tutorial, you will be able to able to perform CRUD(Create, Read, Update, Delete) and query operations in a Deta Base instance using an ESP32. 
 # ESP32/ESP8266: Working with Deta Base (Basic)
 This is part 1 of a 2 part tutorial on using Deta Base with an ESP32 running the Arduino core. This tutorial focuses on getting setup and performing CRUD operations on fixed data. The second tutorial focuses on dynamic and variable data.
 
@@ -110,7 +105,7 @@ typedef struct {
 	String reply;
 } result;
 ```
-Each function of the library that interacts with Deta Base returns a `result` struct containing the HTTP status code of the response in the `statusCode` int and HTML payload of the response in the `reply` String. [Here is a status of HTTP status codes](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status). The gist is that if the `statusCode` of the returned `result` struct is in the 200s, your request was successfully completed, and the reply is in the `reply` String. If the `statusCode` is in the 400s, something went wrong, and some HTML containing error message will be present `reply` String. 
+Each function of the library that interacts with Deta Base returns a `result` struct containing the HTTP status code of the response in the `statusCode` int and HTML payload of the response in the `reply` String. [Here is a list of HTTP status codes](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status). The gist is that if the `statusCode` of the returned `result` struct is in the 200s, your request was successfully completed, and the reply is in the `reply` String. If the `statusCode` is in the 400s, something went wrong, and some HTML containing error message will be present `reply` String. 
 
 There is also a `printResult` method provided which makes it easier to print the status code of the response and the returned HTML reply. Hence, functions can be used in the following way:
 ```c++
@@ -132,5 +127,55 @@ The key is optional, and will be assigned by Deta Base if not provided. If a key
 ```c++
 printResult(detaObj.putObject("{\"items\":[{\"age\":4}]}"));
 ```
-, it will add an entry with `age` as 4 in the database. Then it will print the status code and reply so we know whether or not the request succeeded. The docs mention that the response payload will contain the key assigned to it.
->**Note**: A backslash character (`/`) is added before each `"` to indicate an escape character, since we require `"` in the JSON input.
+, it will add
+```json
+{
+	"age": 4
+}
+```
+into the database. Then it will print the status code and reply so we know whether or not the request succeeded. The docs mention that the response payload will contain the key assigned to it. It also mentioned that multiple objects can be sent using one request/function call. 
+>**Note**: A backslash character (`\`) is added before each `"` to indicate an escape character, since we require `"` in the JSON input.
+>**Note**: **Keys have to be strings**. If you want to use a number as a key, make sure it is interpreted as a string by enclosing it in double-quotes. (Double quotes with back-slashes.
+
+If the request succeeded, we will see a 200 level status code in the Serial monitor, as well as the entire object(s) with it's key(s).
+
+If we login to Deta.sh and go the our project dashboard, we can even see our object added in the online GUI under Base->simple_db.
+![to be added](./to-be-added)
+
+The next thing we will do is retrieve an object by its key using the `getObject()` function. The function expects an existing or non-existent key as its input. Let's try to retrieve an object with the key `abc` (even though we know no such objects exists yet).
+```c++
+printResult(detaObj.getObject("abc"));
+```
+If we run this code, we should see a status code of 404 and an error message in the response payload saying that the object was not found. This is expected as we know that no such object exists. Let's create an object with the key `abc` and try to retrieve it again. 
+
+We can either use `putObject` to create an object with the key `cba` or we can use the online Base GUI to do so, by clicking the `Add` button and setting the fields manually.
+
+![Add button](./to-be-added)
+![Manual fields setting](./to-be-added)
+
+Now, if we execute 
+```c++
+printResult(detaObj.getObject("abc"));
+```
+, we will get a status code in the 200s, and the entire object with this key will be printed out.
+
+Similarly, we can delete an object in the database by using the `deleteObject` function. This function also expects a key as it's input. This function always returns a 200 level status code whether or not an object with the specified key existed.
+Here is an example:
+```c++
+printResult(detaObj.deleteObject("cba"));
+```
+The output indicates successful deletion, even though we know that no object with the key `cba` exists.  If there was an object with this key, it will have been deleted. This is by design, and there is no way to know if an object with the specified key existed or not.
+
+The `insertObject` function corresponds to [this type of request in the docs](https://docs.deta.sh/docs/base/http/#insert-item). The expected input is in the following format:
+```json
+{
+	"item":  {
+		"key":  {key},  // optional
+		// rest of item
+	}
+}
+```
+and the object is only inserted if no other object with the same key exists. If a key is not provided in the payload, it works just like the `putObject` function. An example of its usage:
+```c++
+printResult(detaObj.insertObject("{\"item\":{\"key\":\"cba\",\"age\":4}}"));
+```
