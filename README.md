@@ -45,4 +45,52 @@ Browse to the location where the .zip file was saved, select it, and then click 
 
 ![added library ](./images/libraryAdded.png) 
 
-### 
+### Verifying Everything Works
+**Restart the Arduino IDE**. 
+Change your board to ESP32 from the `Tools` menu and `Board` sub menu. Then open the `File` menu, and go to the `Examples` submenu. Scroll down till you see `detaBaseArduinoESP32`. 
+
+> **Note**: If you don't see `detaBaseArduinoESP32`, check your board selection again. 
+
+Select the example named `detaLibTest` and compile it. If everything compiles, that means you are ready to move on to programming!
+
+![testlibrary ](./images/libraryTest.png) 
+
+### Programming
+Let's start with a blank sketch. Save it to the location of your choice, and let's begin programming. 
+
+Let's start by including the required libraries for our project. The following the snippet of code include the library we just installed and the `WiFiClientSecure` library as well. This also implicitly includes `WiFi` library which we will also use.
+```c++
+#include <detaBaseArduinoESP32.h>
+#include <WiFiClientSecure.h>
+```
+
+Let's define some global variables. We will define our Deta project key, project name, and Base name, a `WiFiClientSecure` object, and a `DetaBaseObject` object, to which all the previous variables and objects are passed. The Base name can be an existing Base instance or something of our choice, in which the Base of that name will be created. The last boolean parameter is used to enable debugging statement. You can choose to leave this parameter out if you choose.
+
+`client` is passed to the `DetaBaseObject` as is, without any modification. This is done because a root CA certificate is set in the `DetaBaseObject` constructor. This is required since we are making requests over HTTPS.
+```c++
+char* apiKey = "MY_KEY";
+char* detaID = "MY_ID";
+char* detaBaseName = "MY_BASE";
+
+WiFiClientSecure client;
+//choose this:
+DetaBaseObject detaObj(client, detaID, detaBaseName, apiKey, true);
+//or this:
+//DetaBaseObject detaObj(client, detaID, detaBaseName, apiKey);
+```
+
+Let's move on to the setup code. We initialize the `Serial` library, and print some helpful messages to tell us where we are in the program. We then connect to a WiFi network. Replace `MY_SSID` and `MY_PASSWORD` with your actual SSID and password. 
+
+```c++
+void setup() {
+  Serial.begin(115200);
+  Serial.println("Initializing WiFi");
+  WiFi.begin("MY_SSID", "MY_PASSWORD");
+  Serial.println("Waiting to connect to WiFi");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("WiFi connected!");
+}
+```
