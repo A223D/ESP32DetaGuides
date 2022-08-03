@@ -302,4 +302,4 @@ This tutorial dealt with sending fixed data to a Deta Base instance. To learn ho
 * Check payload error
 	This error occurs when the JSON input being provided is invalid or is not in the correct format. Check whether each bracket is closed, and that each internal `"` has its own `\`.
 * Nested JSON objects
-Nested JSON objects can be added with a `.` operator. [Check the docs](https://docs.deta.sh/docs/base/http) to see how it's done.
+Nested JSON objects can be accessed with a `.` operator. [Check the docs](https://docs.deta.sh/docs/base/http) to see how it's done.
