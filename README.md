@@ -3,6 +3,12 @@
 This tutorial focuses on using an ESP32/ESP8266 to interface with a Deta Base instance. Deta Base is online NoSQL database, which is free to use and unlimited. These qualities make it perfect for experimental projects and hackathons. 
 
 By the end of this tutorial, you will be able to able to perform CRUD(Create, Read, Update, Delete) and query operations in a Deta Base instance using an ESP32. 
+# ESP32/ESP8266: Working with Deta Base (Basic)
+This is part 1 of a 2 part tutorial on using Deta Base with an ESP32 running the Arduino core. This tutorial focuses on getting setup and performing CRUD operations on fixed data. The second tutorial focuses on dynamic and variable data.
+
+This tutorial focuses on using an ESP32/ESP8266 to interface with a Deta Base instance. Deta Base is online NoSQL database, which is free to use and unlimited. These qualities make it perfect for experimental projects and hackathons. 
+
+By the end of this tutorial, you will be able to able to perform CRUD(Create, Read, Update, Delete) and query operations in a Deta Base instance using an ESP32. 
 
 If you already have a Deta Base instance set up with a Project name, Project Key(aka API key), and Base name in hand, skip the Deta Base setup section and proceed to the Arduino section. 
 
@@ -94,3 +100,37 @@ void setup() {
   Serial.println("WiFi connected!");
 }
 ```
+#### Before We Move On to the Loop
+For the loop, we will put, get, delete, insert, update, and query for objects in Deta Base. These terms have specific meanings corresponding to different types of requests listed out in the [HTTP Base docs](https://docs.deta.sh/docs/base/http/). It is **highly recommended** to read through the mentioned documentation, as this library's functions correspond to the requests listed there, and expect input in the same format as the payloads.
+
+There is a `result` structure built in to the library, which facilitates getting a response from Deta Base. It is defined as:
+```c++
+typedef struct {
+	int statusCode;
+	String reply;
+} result;
+```
+Each function of the library that interacts with Deta Base returns a `result` struct containing the HTTP status code of the response in the `statusCode` int and HTML payload of the response in the `reply` String. [Here is a status of HTTP status codes](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status). The gist is that if the `statusCode` of the returned `result` struct is in the 200s, your request was successfully completed, and the reply is in the `reply` String. If the `statusCode` is in the 400s, something went wrong, and some HTML containing error message will be present `reply` String. 
+
+There is also a `printResult` method provided which makes it easier to print the status code of the response and the returned HTML reply. Hence, functions can be used in the following way:
+```c++
+printResult(detaObj.putObject("Something"));
+```
+#### The Loop
+The first operation we perform will be to insert something into the database. We will use the `putObject` function for this purpose. As the [docs](https://docs.deta.sh/docs/base/http/#example) mention, the expected JSON input is in the following format:
+```json
+{
+	"items":  [
+		{
+			"key":  {key}, //not necessary
+			"field1":  "value1"
+		}
+	]
+}
+```
+The key is optional, and will be assigned by Deta Base if not provided. If a key is provided, and an entry already exists with that key, it is overwritten. So if we write the following line of code
+```c++
+printResult(detaObj.putObject("{\"items\":[{\"age\":4}]}"));
+```
+, it will add an entry with `age` as 4 in the database. Then it will print the status code and reply so we know whether or not the request succeeded. The docs mention that the response payload will contain the key assigned to it.
+>**Note**: A backslash character (`/`) is added before each `"` to indicate an escape character, since we require `"` in the JSON input.
