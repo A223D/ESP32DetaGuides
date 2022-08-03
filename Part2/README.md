@@ -17,6 +17,7 @@ Search for `ArduinoJSON` and click install.
 ![ArduinoJSON install2](./images/aJSONInstall2.png) 
 
 ## Arduino Code
+### Declarations
 We include the libraries from the previous tutorial, along with `ArduinoJson`.
 ```c++
 #include <ArduinoJson.h>
@@ -34,3 +35,83 @@ WiFiClientSecure client;
 DetaBaseObject detaObj(client, detaID, detaBaseName, apiKey, true);
 StaticJsonDocument<50> outer;
 ``` 
+We also declare a `String` called `jsonString` to hold our serialized JSON object once it is created. An `int` called `val` is also defined to hold a demo value which is loaded into our JSON object.
+```c++
+String jsonString;
+int val = -1;
+```
+### Setup Code
+Here is our setup function:
+```c++
+void setup() {
+  Serial.begin(115200);
+  StaticJsonDocument<10> internal;
+  Serial.println("Let's begin initialization");
+  JsonArray items = outer.createNestedArray("items");
+  internal["value"] = val;
+  items.add(internal);
+  serializeJson(outer, jsonString);
+  Serial.println(jsonString);
+  Serial.println("Reached before WiFi init");
+  WiFi.begin("MY_SSID", "MY_PASSWORD");
+  Serial.println("Waiting to connect to WiFi");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println();
+  jsonString = "";
+
+}
+```
+`putObject` expects a JSON object in the following format:
+```json
+{
+	"items":  [
+		{
+			"key":  {key}, //not necessary
+			"field1":  "value1"
+		}
+	]
+}
+```
+In our setup function, we initialize the Serial library to print some helpful statements during program execution. We also create another `StaticJsonDocument` called `internal` to hold our internal JSON object. In the next line, we create an array to hold the JSON objects(`internal`, in this case) in the `items` array. We then create an attribute called `value` in the `internal` JSON object, and assign the value `val` to it. The `internal` object is then added to the `items` array in the `outer` object.
+
+The `serializeJson` function serializes(packs) the complete JSON object into a String. The format for this function is 
+```c++
+serializeJson(JsonDocument, outputString);
+```
+and the serialized JSON object is appended to the output String. Consequently, we need to clear our output String(`jsonString`) each time we want to serialize a new JSON object into it. 
+We then print `jsonString` to make sure everything is looking okay, and then connect to WiFi. Replace `MY_SSID` and `MY_PASSWORD` with your actual SSID and password. 
+> **Note**: Enterprise connections do not work with the ESP32. If all you have is an enterprise WiFi connection, create a mobile hotspot using a PC or mobile device.
+
+Once WiFi is connected, we clear `jsonString`. As mentioned previously `jsonString` must be cleared each time since `serializeJSON` appends, instead of overwrites. 
+
+### Loop Code
+```c++
+void loop() {
+  outer["items"][0]["value"] = val;
+  serializeJson(outer, jsonString);
+  Serial.println(jsonString);
+
+  printResult(detaObj.putObject(jsonString.c_str()));
+  Serial.println(); //for readability
+  jsonString = "";
+  val++;
+  delay(1000);
+}
+```
+In the first line, we assign the `int`, `val`, to our JSON object, `outer`. The resulting JSON object is:
+```json
+{
+	"items":  [
+		{
+			"value":  <val>
+		}
+	]
+}
+```
+We then serialize it to `jsonString`, and print it out for debugging purposes. 
+We then use `putObject`, and pass the the c-string of `jsonString` by calling the `c_str()` function on `jsonString`. [More information on the `c_str()` function is available here](https://www.arduino.cc/reference/en/language/variables/data-types/string/functions/c_str/).
+The returned `result` struct is passed to the `printResult` function to check if the request completed. 
+`jsonString` is then reset for the next iteration of the loop, and `val` is increased by 1. A `delay()` is added for ease of readability but is not required. 
