@@ -1,5 +1,5 @@
 
-# ESP32/ESP8266: Working with Deta Base (Basic)
+# ESP32/ESP8266: Working with Deta Base (Static)
 This is part 1 of a 2 part tutorial on using Deta Base with an ESP32 running the Arduino core. This tutorial focuses on getting setup and performing CRUD operations on fixed data. The second tutorial focuses on dynamic and variable data.
 
 This tutorial focuses on using an ESP32/ESP8266 to interface with a Deta Base instance. Deta Base is online NoSQL database, which is free to use and unlimited. These qualities make it perfect for experimental projects and hackathons. 
