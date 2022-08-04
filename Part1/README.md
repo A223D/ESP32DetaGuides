@@ -1,3 +1,4 @@
+
 # ESP32/ESP8266: Working with Deta Base (Basic)
 This is part 1 of a 2 part tutorial on using Deta Base with an ESP32 running the Arduino core. This tutorial focuses on getting setup and performing CRUD operations on fixed data. The second tutorial focuses on dynamic and variable data.
 
@@ -105,9 +106,9 @@ typedef struct {
 	String reply;
 } result;
 ```
-Each function of the library that interacts with Deta Base returns a `result` struct containing the HTTP status code of the response in the `statusCode` int and HTML payload of the response in the `reply` String. [Here is a list of HTTP status codes](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status). The gist is that if the `statusCode` of the returned `result` struct is in the 200s, your request was successfully completed, and the reply is in the `reply` String. If the `statusCode` is in the 400s, something went wrong, and some HTML containing error message will be present `reply` String. 
+Each function of the library that interacts with Deta Base returns a `result` struct containing the HTTP status code of the response in the `statusCode` int and JSON payload of the response in the `reply` String. [Here is a list of HTTP status codes](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status). The gist is that if the `statusCode` of the returned `result` struct is in the 200s, your request was successfully completed, and the reply is in the `reply` String. If the `statusCode` is in the 400s, something went wrong, and some JSON containing error message will be present `reply` String. 
 
-There is also a `printResult` method provided which makes it easier to print the status code of the response and the returned HTML reply. Hence, functions can be used in the following way:
+There is also a `printResult` method provided which makes it easier to print the status code of the response and the returned JSON reply. Hence, functions can be used in the following way:
 ```c++
 printResult(detaObj.putObject("Something"));
 ```
