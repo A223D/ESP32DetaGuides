@@ -141,7 +141,7 @@ into the database. Then it will print the status code and reply so we know wheth
 If the request succeeded, we will see a 200 level status code in the Serial monitor, as well as the entire object(s) with it's key(s).
 
 If we login to Deta.sh and go the our project dashboard, we can even see our object added in the online GUI under Base->simple_db.
-![to be added](./to-be-added)
+![first putObject](./images/firstPut.png)
 
 The next thing we will do is retrieve an object by its key using the `getObject()` function. The function expects an existing or non-existent key as its input. Let's try to retrieve an object with the key `abc` (even though we know no such objects exists yet).
 ```c++
@@ -149,10 +149,9 @@ printResult(detaObj.getObject("abc"));
 ```
 If we run this code, we should see a status code of 404 and an error message in the response payload saying that the object was not found. This is expected as we know that no such object exists. Let's create an object with the key `abc` and try to retrieve it again. 
 
-We can either use `putObject` to create an object with the key `cba` or we can use the online Base GUI to do so, by clicking the `Add` button and setting the fields manually.
+We can either use `putObject` to create an object with the key `cba` or we can use the online Base GUI to do so, by clicking the `Add` button, setting the fields manually, and then clicking `Save 1 edit`.
 
-![Add button](./to-be-added)
-![Manual fields setting](./to-be-added)
+![Manual fields setting](./images/addManual.png)
 
 Now, if we execute 
 ```c++
@@ -194,7 +193,7 @@ printResult(detaObj.insertObject("{\"item\":{\"key\":\"abc\",\"age\":4}}"));
 ```
 will give us a 200 level status code (successful request) since no other entry with key `abc` existed before this one. You can see with the online GUI that this entry has been added. 
 
-![abc Added](./to-be-added) 
+![abc Added](./images/addAbc.png) 
 
 `updateObject` is used to update existing entries. It expects a key for an existing object and an input in the following JSON format:
 ```json
