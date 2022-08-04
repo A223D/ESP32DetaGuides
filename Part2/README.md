@@ -197,4 +197,4 @@ void loop() {
 
 ## Frequently Asked Questions
 * Missing or incorrect deserialized values
-	Try increasing the size of the receiving `StaticJsonDocument` or `DynamicJsonDocument`. It is a guesstimate, and it generally needs adjusting find it's minimum value. Try a high value, and then gradually lessening it.
+	Try increasing the size of the receiving `StaticJsonDocument` or `DynamicJsonDocument`. It is a guesstimate, and it generally needs adjusting to find it's minimum value. Try a high value, and then gradually lessening it.
