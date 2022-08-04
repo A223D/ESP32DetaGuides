@@ -296,7 +296,7 @@ detaObj.getObject("abc");
 ```
 if the output is not required.
 
-This tutorial dealt with sending fixed data to a Deta Base instance. To learn how to send dynamic data (such as a continuous read value from a sensor), [move on part 2](to/be/done). 
+This tutorial dealt with sending fixed data to a Deta Base instance. To learn how to send dynamic data (such as a continuous read value from a sensor), [move on part 2](https://github.com/A223D/ESP32DetaGuides/tree/main/Part2). 
 
 ## Frequently Asked Questions
 * Check payload error
