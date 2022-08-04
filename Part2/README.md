@@ -151,6 +151,9 @@ WiFiClientSecure client;
 DetaBaseObject detaObj(client, detaID, detaBaseName, apiKey, true);
 StaticJsonDocument<50> outer;
 
+String jsonString;
+int val = 1;
+
 void setup() {
   Serial.begin(115200);
   StaticJsonDocument<20> internal;
